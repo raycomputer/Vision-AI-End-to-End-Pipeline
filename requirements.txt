@@ -6,9 +6,9 @@ ultralytics>=8.0.0  # YOLOv8 & YOLO11 support
 # Data Processing & Augmentation
 opencv-python>=4.8.0
 albumentations>=1.3.1
-numpy>=1.24.0
+numpy==1.26.4
 matplotlib>=3.7.0
-timm
+timm>=1.0.0
 
 # Deployment (Server)
 fastapi>=0.100.0

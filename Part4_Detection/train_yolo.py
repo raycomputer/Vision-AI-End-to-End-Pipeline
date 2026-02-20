@@ -1,39 +1,49 @@
 from ultralytics import YOLO
-import torch
+import os
 
 def train_yolo_model():
     """
     YOLOv8 Custom Data 학습 파이프라인
-    Source [2]: 학습 실행 및 트러블 슈팅 (Batch Size, AMP, Image Size)
     """
     
+    # 0. 설정 파일 경로 확인
+    yaml_path = 'configs/data.yaml'
+    if not os.path.exists(yaml_path):
+        print(f"❌ 에러: 설정 파일 '{yaml_path}'이 없습니다.")
+        print("configs 폴더 안에 data.yaml 파일을 먼저 만들어주세요.")
+        return
+
+    print(f"🚀 학습 시작! 설정 파일: {yaml_path}")
+
     # 1. 모델 로드 (Pre-trained Weights)
-    # Source [2]: yolov8n(nano)부터 시작하여 속도와 정확도 트레이드오프 확인
+    # yolov8n.pt: 가장 가볍고 빠른 모델 (nano 버전)
+    # 처음 실행 시 인터넷에서 자동으로 다운로드됩니다.
     model = YOLO('yolov8n.pt') 
 
     # 2. 학습 실행 (Training)
     results = model.train(
-        data='configs/data.yaml',  # 작성한 설정 파일 경로
-        epochs=50,                 # 학습 횟수
+        data=yaml_path,    # 작성한 설정 파일 경로
+        epochs=50,         # 학습 횟수
         
-        # --- Source [2]: OOM(Out of Memory) 방지 및 최적화 설정 ---
-        imgsz=640,      # 입력 이미지 해상도 (메모리 부족 시 512로 축소)
-        batch=16,       # 배치 사이즈 (메모리 부족 시 8, 4로 축소)
-        amp=True,       # Automatic Mixed Precision (FP16 연산으로 메모리 절약 및 가속)
-        workers=4,      # 데이터 로딩 워커 수
+        # --- 최적화 설정 ---
+        imgsz=640,         # 이미지 크기 (640x640)
+        batch=16,          # 배치 사이즈 (메모리 부족하면 8로 줄이세요)
+        workers=4,         # 데이터 로딩 속도 (Windows라면 0 권장)
         
-        # --- Source [2]: 학습 인프라 설정 ---
-        device='0',     # Single GPU: '0', Multi-GPU(DDP): '0,1,2,3'
+        # --- 저장 설정 ---
+        project='Part4_Detection/runs', # 결과 저장 폴더 이름
+        name='yolo_experiment_1',    # 실험 이름
+        exist_ok=True,     # 덮어쓰기 허용
+        patience=10,       # 10번 동안 성능 안 오르면 조기 종료
+
+        # freeze=10, # Backbone freeze
         
-        # 프로젝트 관리
-        project='vision_ai_project',
-        name='yolo_experiment_1',
-        exist_ok=True,   # 기존 폴더 덮어쓰기 허용
-        patience=10      # Early Stopping (10 epoch 동안 개선 없으면 중단)
+        device='0' if torch.cuda.is_available() else 'cpu' # GPU 자동 설정
     )
 
-    print("Training Completed. Best Model Saved at:", results.save_dir)
+    print(f"✅ 학습 완료! 결과 저장 위치: {results.save_dir}")
 
 if __name__ == '__main__':
+    import torch
     # Windows 환경에서 Multiprocessing 오류 방지를 위해 필수
     train_yolo_model()

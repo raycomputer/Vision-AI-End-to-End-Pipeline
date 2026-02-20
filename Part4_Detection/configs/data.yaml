@@ -1,14 +1,10 @@
-# Dataset Root Directory
-# 주의: 절대 경로를 권장하며, 상대 경로 사용 시 실행 위치에 유의하세요.
-path: ../datasets/coco128  # 데이터셋 루트 디렉토리
+# 데이터셋 경로 (절대 경로 또는 상대 경로)
+path: ./datasets  # 데이터셋 루트 디렉토리 (train_yolo.py 위치 기준 상위 폴더 참조)
 
-train: images/train2017  # 학습 이미지 (relative to 'path')
-val: images/train2017    # 검증 이미지 (relative to 'path')
-test:  # 테스트 이미지 (Optional)
+# 학습(train)과 검증(val) 이미지 경로 (path 기준 상대 경로)
+train: images/train
+val: images/val
 
-# Classes Configuration
-nc: 80  # number of classes
-names:  # 0-based indexing
-  0: person
-  1: bicycle
-  2: car
+# 클래스 정보
+nc: 2              # 클래스 개수 (고양이, 개 2개라면)
+names: ['cat', 'dog']  # 클래스 이름 (0번: cat, 1번: dog)
